@@ -57,7 +57,7 @@ API Details
 -----------
 
 
-### decodeInt32(buffer, [index]) -> { value: num, endIndex: num }
+### decodeInt32(buffer, [index]) -> { value: num, nextIndex: num }
 
 Takes a signed LEB128-encoded byte sequence in the given buffer at the
 given index (defaults to `0`), returning the decoded value and the
@@ -69,7 +69,7 @@ at the index (only possibly true if the last byte in the buffer has
 its high bit set) or if the decoded value is out of the range of the
 expected type.
 
-### decodeInt64(buffer, [index]) -> { value: num, endIndex: num, lossy: bool }
+### decodeInt64(buffer, [index]) -> { value: num, nextIndex: num, lossy: bool }
 
 Takes a signed LEB128-encoded byte sequence in the given buffer at the
 given index (defaults to `0`), returning the decoded value, the index
@@ -82,7 +82,7 @@ at the index (only possibly true if the last byte in the buffer has
 its high bit set) or if the decoded value is out of the range of the
 expected type.
 
-### decodeIntBuffer(encodedBuffer, [index]) -> { value: buffer, endIndex: num }
+### decodeIntBuffer(encodedBuffer, [index]) -> { value: buffer, nextIndex: num }
 
 Takes a signed LEB128-encoded byte sequence in the given buffer at the
 given index (defaults to `0`), returning the decoded value and the
@@ -94,17 +94,17 @@ This throws an exception if the buffer doesn't have a valid encoding
 at the index (only possibly true if the last byte in the buffer has
 its high bit set).
 
-### decodeUint32(buffer, [index]) -> { value: num, endIndex: num }
+### decodeUint32(buffer, [index]) -> { value: num, nextIndex: num }
 
 Like `decodeInt32`, but with the unsigned LEB128 format and unsigned
 32-bit integer type.
 
-### decodeUint64(buffer, [index]) -> { value: num, endIndex: num, lossy: bool }
+### decodeUint64(buffer, [index]) -> { value: num, nextIndex: num, lossy: bool }
 
 Like `decodeInt64`, but with the unsigned LEB128 format and unsigned
 64-bit integer type.
 
-### decodeUintBuffer(encodedBuffer, [index]) -> { value: buffer, endIndex: num }
+### decodeUintBuffer(encodedBuffer, [index]) -> { value: buffer, nextIndex: num }
 
 Like `decodeIntBuffer`, but with the unsigned LEB128 format.
 
