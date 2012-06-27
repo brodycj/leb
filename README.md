@@ -26,6 +26,74 @@ type, the 64-bit decoder methods return a `lossy` flag which indicates
 if the decoded result isn't exactly the number represented in the
 encoded form.
 
+Format Details
+--------------
+
+The LEB128 format is really quite simple.
+
+An encoded value is a series of bytes where the high bit (bit #7 or
+`0x80`) is set on each byte but the final one. The other seven bits
+of each byte are the payload bits.
+
+To interpret an encoded value, one concatenates the payload bits
+in little-endian order (so the *first* payload byte contains the
+*least* significant bits). After that, if the encoded value is
+a signed representation, one sign-extends the result.
+
+Schematically, here are the one-byte encodings:
+
+```
+               +--------+
+encoded        |0GFEDCBA|
+               +--------+
+
+unsigned       +--------+
+interpretation |0GFEDCBA|
+               +--------+
+
+signed         +--------+
+interpretation |GGFEDCBA|
+               +--------+
+```
+
+That is: The unsigned interpretation of a single-byte encoding is the
+byte value itself. The signed interpretation is of the value as a
+signed seven-bit integer.
+
+Similarly, here are the two-byte encodings:
+
+```
+               +--------+ +--------+
+encoded        |1GFEDCBA| |0NMLKJIH|
+               +--------+ +--------+
+
+unsigned       +----------------+
+interpretation |00NMLKJIHGFEDCBA|
+               +----------------+
+
+signed         +----------------+
+interpretation |NNNMLKJIHGFEDCBA|
+               +----------------+
+```
+
+That is: The unsigned interpretation of a two-byte encoding is
+a 14-bit integer consisting of the first-byte payload bits and
+second-byte payload bits concatenated togther. The signed
+interpretation is the same as the unsigned, except that bit #13
+is treated as the sign and is hence extended to fill the remaining
+bits.
+
+Some concrete examples (all numbers are hex):
+
+```
+encoded    unsigned          signed
+bytes      interpretation    interpretation
+-------    --------------    --------------
+10         +10               +10
+45         +45               -3b
+8e 32      +190e             +190e
+c1 57      +2bc1             -143f
+```
 
 Building and Installing
 -----------------------
