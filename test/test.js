@@ -219,11 +219,11 @@ function testValue64(value) {
     throw new Error("Bad endIndex for " + value);
   }
 
-  if (decode.value === value) {
-    assert.ok(!decode.lossy, "Wrong lossy for " + value);
-  } else {
-    assert.ok(decode.lossy, "Wrong lossy for " + value);
+  if (decode.value !== value) {
+    throw new Error("Value mismatch for " + value);
   }
+
+  assert.ok(!decode.lossy, "Bad lossy for " + value);
 
   // Force it to be signed.
   if (value >= 0x8000000000000000) {
@@ -236,11 +236,11 @@ function testValue64(value) {
     throw new Error("Bad endIndex for " + value);
   }
 
-  if (decode.value === value) {
-    assert.ok(!decode.lossy, "Wrong lossy for " + value);
-  } else {
-    assert.ok(decode.lossy, "Wrong lossy for " + value);
+  if (decode.value !== value) {
+    throw new Error("Value mismatch for " + value);
   }
+
+  assert.ok(!decode.lossy, "Bad lossy for " + value);
 }
 
 /**
