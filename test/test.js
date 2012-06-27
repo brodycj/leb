@@ -102,7 +102,7 @@ function trimUIntBuffer(buffer) {
 function trimLebBuffer(buffer) {
   var length = buffer.length;
   var signBit = (buffer[length - 1] >> 6) & 1;
-  var signByte = signBit * 0xff;
+  var signByte = (signBit * 0xff) | 0x80;
 
   while ((length > 1) &&
          ((buffer[length - 1] | 0x80) === signByte) &&
@@ -261,7 +261,7 @@ function testEncodeDecode(buffer) {
   }
 
   if (decode.endIndex !== encode.length) {
-    throw new Error("Bad endIndex for " + value);
+    throw new Error("Bad endIndex for " + bufString(buffer));
   }
 
   trim = trimUIntBuffer(buffer);
@@ -278,7 +278,7 @@ function testEncodeDecode(buffer) {
   }
 
   if (decode.endIndex !== encode.length) {
-    throw new Error("Bad endIndex for " + value);
+    throw new Error("Bad endIndex for " + bufString(buffer));
   }
 }
 
@@ -299,8 +299,8 @@ function testDecodeEncode(buffer) {
     assert.ok(false);
   }
 
-  if (decode.endIndex !== encode.length) {
-    throw new Error("Bad endIndex for " + value);
+  if (decode.endIndex !== buffer.length) {
+    throw new Error("Bad endIndex for " + bufString(buffer));
   }
 
   trim = trimULebBuffer(buffer);
@@ -316,8 +316,8 @@ function testDecodeEncode(buffer) {
     assert.ok(false);
   }
 
-  if (decode.endIndex !== encode.length) {
-    throw new Error("Bad endIndex for " + value);
+  if (decode.endIndex !== buffer.length) {
+    throw new Error("Bad endIndex for " + bufString(buffer));
   }
 }
 
