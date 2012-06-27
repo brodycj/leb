@@ -190,8 +190,8 @@ function testValue32(value) {
   var buf = leb.encodeUInt32(value);
   var decode = leb.decodeUInt32(buf);
 
-  if (decode.endIndex !== buf.length) {
-    throw new Error("Bad endIndex for " + value);
+  if (decode.nextIndex !== buf.length) {
+    throw new Error("Bad nextIndex for " + value);
   }
 
   if (decode.value !== value) {
@@ -202,8 +202,8 @@ function testValue32(value) {
   buf = leb.encodeInt32(value);
   decode = leb.decodeInt32(buf);
 
-  if (decode.endIndex !== buf.length) {
-    throw new Error("Bad endIndex for " + value);
+  if (decode.nextIndex !== buf.length) {
+    throw new Error("Bad nextIndex for " + value);
   }
 
   if (decode.value !== value) {
@@ -219,8 +219,8 @@ function testValue64(value) {
   var buf = leb.encodeUInt64(value);
   var decode = leb.decodeUInt64(buf);
 
-  if (decode.endIndex !== buf.length) {
-    throw new Error("Bad endIndex for " + value);
+  if (decode.nextIndex !== buf.length) {
+    throw new Error("Bad nextIndex for " + value);
   }
 
   if (decode.value !== value) {
@@ -236,8 +236,8 @@ function testValue64(value) {
   buf = leb.encodeInt64(value);
   decode = leb.decodeInt64(buf);
 
-  if (decode.endIndex !== buf.length) {
-    throw new Error("Bad endIndex for " + value);
+  if (decode.nextIndex !== buf.length) {
+    throw new Error("Bad nextIndex for " + value);
   }
 
   if (decode.value !== value) {
@@ -264,8 +264,8 @@ function testEncodeDecode(buffer) {
     assert.ok(false);
   }
 
-  if (decode.endIndex !== encode.length) {
-    throw new Error("Bad endIndex for " + bufString(buffer));
+  if (decode.nextIndex !== encode.length) {
+    throw new Error("Bad nextIndex for " + bufString(buffer));
   }
 
   trim = trimUIntBuffer(buffer);
@@ -281,8 +281,8 @@ function testEncodeDecode(buffer) {
     assert.ok(false);
   }
 
-  if (decode.endIndex !== encode.length) {
-    throw new Error("Bad endIndex for " + bufString(buffer));
+  if (decode.nextIndex !== encode.length) {
+    throw new Error("Bad nextIndex for " + bufString(buffer));
   }
 }
 
@@ -303,8 +303,8 @@ function testDecodeEncode(buffer) {
     assert.ok(false);
   }
 
-  if (decode.endIndex !== buffer.length) {
-    throw new Error("Bad endIndex for " + bufString(buffer));
+  if (decode.nextIndex !== buffer.length) {
+    throw new Error("Bad nextIndex for " + bufString(buffer));
   }
 
   trim = trimULebBuffer(buffer);
@@ -320,8 +320,8 @@ function testDecodeEncode(buffer) {
     assert.ok(false);
   }
 
-  if (decode.endIndex !== buffer.length) {
-    throw new Error("Bad endIndex for " + bufString(buffer));
+  if (decode.nextIndex !== buffer.length) {
+    throw new Error("Bad nextIndex for " + bufString(buffer));
   }
 }
 
@@ -350,10 +350,10 @@ function testOneByteEncodings() {
     var decodeInt = leb.decodeIntBuffer(buf);
     var decodeUInt = leb.decodeUIntBuffer(buf);
 
-    assert.equal(decodeInt.endIndex, 1);
+    assert.equal(decodeInt.nextIndex, 1);
     assert.equal(decodeInt.value.length, 1);
     assert.equal(decodeInt.value[0], asSigned & 0xff);
-    assert.equal(decodeUInt.endIndex, 1);
+    assert.equal(decodeUInt.nextIndex, 1);
     assert.equal(decodeUInt.value.length, 1);
     assert.equal(decodeUInt.value[0], value);
 
@@ -388,7 +388,7 @@ function testTwoByteEncodings() {
     var decodeInt = leb.decodeIntBuffer(buf);
     var decodeUInt = leb.decodeUIntBuffer(buf);
 
-    assert.equal(decodeInt.endIndex, 2);
+    assert.equal(decodeInt.nextIndex, 2);
     assert.equal(decodeInt.value[0], asSigned & 0xff);
     if ((asSigned >= -128) && (asSigned <= 127)) {
       assert.equal(decodeInt.value.length, 1);
@@ -405,7 +405,7 @@ function testTwoByteEncodings() {
       assert.equal(encodeInt[1], buf[1]);
     }
 
-    assert.equal(decodeUInt.endIndex, 2);
+    assert.equal(decodeUInt.nextIndex, 2);
     assert.equal(decodeUInt.value[0], value & 0xff);
     if (value <= 255) {
       assert.equal(decodeUInt.value.length, 1);
