@@ -331,6 +331,100 @@ function testDecodeEncode(buffer) {
  */
 
 /**
+ * Tests conversion of values that encode into one byte. This
+ * includes exactly comparing the encoded values (whereas other tests
+ * merely verify a encode-decode or decode-encode cycle).
+ */
+function testOneByteEncodings() {
+  var buf = new Buffer(1);
+
+  for (var value = 0; value < 127; value++) {
+    var asSigned = (value << 25) >> 25; // sign-extend bit #6
+    buf[0] = value;
+
+    assert.equal(leb.decodeInt32(buf).value, asSigned);
+    assert.equal(leb.decodeInt64(buf).value, asSigned);
+    assert.equal(leb.decodeUInt32(buf).value, value);
+    assert.equal(leb.decodeUInt64(buf).value, value);
+
+    var decodeInt = leb.decodeIntBuffer(buf);
+    var decodeUInt = leb.decodeUIntBuffer(buf);
+
+    assert.equal(decodeInt.endIndex, 1);
+    assert.equal(decodeInt.value.length, 1);
+    assert.equal(decodeInt.value[0], asSigned & 0xff);
+    assert.equal(decodeUInt.endIndex, 1);
+    assert.equal(decodeUInt.value.length, 1);
+    assert.equal(decodeUInt.value[0], value);
+
+    var encodeInt = leb.encodeIntBuffer(decodeInt.value);
+    var encodeUInt = leb.encodeUIntBuffer(decodeUInt.value);
+
+    assert.equal(encodeInt.length, 1);
+    assert.equal(encodeInt[0], value);
+    assert.equal(encodeUInt.length, 1);
+    assert.equal(encodeUInt[0], value);
+  }
+}
+
+/**
+ * Tests conversion of values that encode into two bytes. This
+ * includes exactly comparing the encoded values (whereas other tests
+ * merely verify a encode-decode or decode-encode cycle).
+ */
+function testTwoByteEncodings() {
+  var buf = new Buffer(2);
+
+  for (var value = 0; value < 16384; value++) {
+    var asSigned = (value << 18) >> 18; // sign-extend bit #14
+    buf[0] = (value & 0x7f) | 0x80;
+    buf[1] = (value >> 7) & 0x7f;
+
+    assert.equal(leb.decodeInt32(buf).value, asSigned);
+    assert.equal(leb.decodeInt64(buf).value, asSigned);
+    assert.equal(leb.decodeUInt32(buf).value, value);
+    assert.equal(leb.decodeUInt64(buf).value, value);
+
+    var decodeInt = leb.decodeIntBuffer(buf);
+    var decodeUInt = leb.decodeUIntBuffer(buf);
+
+    assert.equal(decodeInt.endIndex, 2);
+    assert.equal(decodeInt.value[0], asSigned & 0xff);
+    if ((asSigned >= -128) && (asSigned <= 127)) {
+      assert.equal(decodeInt.value.length, 1);
+    } else {
+      assert.equal(decodeInt.value.length, 2);
+      assert.equal(decodeInt.value[1], (asSigned >> 8) & 0xff);
+    }
+
+    if ((asSigned < -64) || (asSigned > 63)) {
+      // These are the ones that should re-encode as two bytes.
+      var encodeInt = leb.encodeIntBuffer(decodeInt.value);
+      assert.equal(encodeInt.length, 2);
+      assert.equal(encodeInt[0], buf[0]);
+      assert.equal(encodeInt[1], buf[1]);
+    }
+
+    assert.equal(decodeUInt.endIndex, 2);
+    assert.equal(decodeUInt.value[0], value & 0xff);
+    if (value <= 255) {
+      assert.equal(decodeUInt.value.length, 1);
+    } else {
+      assert.equal(decodeUInt.value.length, 2);
+      assert.equal(decodeUInt.value[1], (value >> 8) & 0xff);
+    }
+
+    if (value > 127) {
+      // These are the ones that should re-encode as two bytes.
+      var encodeUInt = leb.encodeUIntBuffer(decodeUInt.value);
+      assert.equal(encodeUInt.length, 2);
+      assert.equal(encodeUInt[0], buf[0]);
+      assert.equal(encodeUInt[1], buf[1]);
+    }
+  }
+}
+
+/**
  * Tests conversion of 32-bit zero.
  */
 function testZero32() {
@@ -464,6 +558,8 @@ function testBuffers() {
   }
 }
 
+testOneByteEncodings();
+testTwoByteEncodings();
 testZero32();
 testContiguousBits32();
 testMisc32();
