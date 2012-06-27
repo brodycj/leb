@@ -86,13 +86,15 @@ bits.
 Some concrete examples (all numbers are hex):
 
 ```
-encoded    unsigned          signed
-bytes      interpretation    interpretation
--------    --------------    --------------
-10         +10               +10
-45         +45               -3b
-8e 32      +190e             +190e
-c1 57      +2bc1             -143f
+encoded      unsigned          signed
+bytes        interpretation    interpretation
+-------      --------------    --------------
+10           +10               +10
+45           +45               -3b
+8e 32        +190e             +190e
+c1 57        +2bc1             -143f
+80 80 80 3f  +7e00000          +7e00000
+80 80 80 4f  +9e00000          -6200000
 ```
 
 Building and Installing
