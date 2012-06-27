@@ -42,6 +42,12 @@ function Randomish(seed) {
     }
     return result;
   }
+
+  this.nextUInt64 = function nextUInt64() {
+    var lowWord = this.nextUInt32();
+    var highWord = this.nextUInt32();
+    return (highWord * 0x100000000) + lowWord;
+  }
 }
 
 /**
@@ -180,18 +186,9 @@ function testContiguousBits64() {
  */
 function testMisc64() {
   var rand = new Randomish(65432);
-  var hit = [];
 
   for (var i = 0; i < 100000; i++) {
-    var lowWord = rand.nextUInt32();
-    var highWord = rand.nextUInt32();
-    var value = (highWord * 0x100000000) + lowWord;
-
-    if (hit[value]) {
-      console.log("~~~ oops", i, value);
-    }
-    hit[value] = true;
-    testValue64(value);
+    testValue64(rand.nextUInt64());
   }
 }
 
