@@ -21,7 +21,129 @@ var leb = require("../");
  */
 
 /**
- * Construct a (very) pseudo-random number generator.
+ * Gets a string form for a buffer.
+ */
+function bufString(buf) {
+  return buf.toString("hex");
+}
+
+/**
+ * Compares two buffers for equality.
+ */
+function bufEqual(buf1, buf2) {
+  var length = buf1.length;
+
+  if (buf2.length !== length) {
+    console.log("LENGTH MISMATCH:", length, buf2.length);
+    return false;
+  }
+
+  for (var i = 0; i < length; i++) {
+    if (buf1[i] !== buf2[i]) {
+      console.log("MISMATCH AT:", i);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Trims a buffer that holds a signed int encoding, so that it is
+ * of minimal size.
+ */
+function trimIntBuffer(buffer) {
+  var length = buffer.length;
+  var signBit = buffer[length - 1] >> 7;
+  var signByte = signBit * 0xff;
+
+  while ((length > 1) &&
+         (buffer[length - 1] === signByte) &&
+         ((buffer[length - 2] >> 7) === signBit)) {
+    length--;
+  }
+
+  if (length === buffer.length) {
+    return buffer;
+  }
+
+  var newBuf = new Buffer(length);
+  buffer.copy(newBuf);
+  return newBuf;
+}
+
+/**
+ * Trims a buffer that holds an usigned int encoding, so that it is
+ * of minimal size.
+ */
+function trimUIntBuffer(buffer) {
+  var length = buffer.length;
+  var signBit = buffer[length - 1] >> 7;
+  var signByte = signBit * 0xff;
+
+  while ((length > 1) &&
+         (buffer[length - 1] === 0)) {
+    length--;
+  }
+
+  if (length === buffer.length) {
+    return buffer;
+  }
+
+  var newBuf = new Buffer(length);
+  buffer.copy(newBuf);
+  return newBuf;
+}
+
+/**
+ * Trims a buffer that holds a signed LEB encoding, so that it is
+ * of minimal size.
+ */
+function trimLebBuffer(buffer) {
+  var length = buffer.length;
+  var signBit = (buffer[length - 1] >> 6) & 1;
+  var signByte = signBit * 0xff;
+
+  while ((length > 1) &&
+         ((buffer[length - 1] | 0x80) === signByte) &&
+         (((buffer[length - 2] >> 6) & 1) === signBit)) {
+    length--;
+  }
+
+  if (length === buffer.length) {
+    return buffer;
+  }
+
+  var newBuf = new Buffer(length);
+  buffer.copy(newBuf);
+  newBuf[length - 1] &= 0x7f;
+  return newBuf;
+}
+
+/**
+ * Trims a buffer that holds an unsigned LEB encoding, so that it is
+ * of minimal size.
+ */
+function trimULebBuffer(buffer) {
+  var length = buffer.length;
+
+  while ((length > 1) &&
+         ((buffer[length - 1] | 0x80) === 0x80)) {
+    length--;
+  }
+
+  if (length === buffer.length) {
+    return buffer;
+  }
+
+  var newBuf = new Buffer(length);
+  buffer.copy(newBuf);
+  newBuf[length - 1] &= 0x7f;
+  return newBuf;
+}
+
+/**
+ * Constructs a (very) pseudo-random number generator.
  */
 function Randomish(seed) {
   var x = 12345;
@@ -47,6 +169,12 @@ function Randomish(seed) {
     var lowWord = this.nextUInt32();
     var highWord = this.nextUInt32();
     return (highWord * 0x100000000) + lowWord;
+  }
+
+  this.fillBuffer = function fillBuffer(buf) {
+    for (var i = buf.length - 1; i >= 0; i--) {
+      buf[i] = this.nextByte();
+    }
   }
 }
 
@@ -115,6 +243,84 @@ function testValue64(value) {
   }
 }
 
+/**
+ * Test a buffer encode-decode cycle, both as signed and unsigned.
+ */
+function testEncodeDecode(buffer) {
+  var trim = trimIntBuffer(buffer);
+  var encode = leb.encodeIntBuffer(buffer);
+  var decode = leb.decodeIntBuffer(encode);
+
+  try {
+    assert.ok(bufEqual(trim, decode.value));
+  } catch (ex) {
+    console.log("INT PROBLEM");
+    console.log("ORIGINAL:", bufString(buffer));
+    console.log("DECODED: ", bufString(decode.value));
+    assert.ok(false);
+  }
+
+  if (decode.endIndex !== encode.length) {
+    throw new Error("Bad endIndex for " + value);
+  }
+
+  trim = trimUIntBuffer(buffer);
+  encode = leb.encodeUIntBuffer(buffer);
+  decode = leb.decodeUIntBuffer(encode);
+
+  try {
+    assert.ok(bufEqual(trim, decode.value));
+  } catch (ex) {
+    console.log("UINT PROBLEM");
+    console.log("ORIGINAL:", bufString(buffer));
+    console.log("DECODED: ", bufString(decode.value));
+    assert.ok(false);
+  }
+
+  if (decode.endIndex !== encode.length) {
+    throw new Error("Bad endIndex for " + value);
+  }
+}
+
+/**
+ * Test a buffer decode-encode cycle, both as signed and unsigned.
+ */
+function testDecodeEncode(buffer) {
+  var trim = trimLebBuffer(buffer);
+  var decode = leb.decodeIntBuffer(buffer);
+  var encode = leb.encodeIntBuffer(decode.value);
+
+  try {
+    assert.ok(bufEqual(trim, encode));
+  } catch (ex) {
+    console.log("INT PROBLEM");
+    console.log("ORIGINAL:", bufString(buffer));
+    console.log("ENCODED: ", bufString(encode));
+    assert.ok(false);
+  }
+
+  if (decode.endIndex !== encode.length) {
+    throw new Error("Bad endIndex for " + value);
+  }
+
+  trim = trimULebBuffer(buffer);
+  decode = leb.decodeUIntBuffer(buffer);
+  encode = leb.encodeUIntBuffer(decode.value);
+
+  try {
+    assert.ok(bufEqual(trim, encode));
+  } catch (ex) {
+    console.log("UINT PROBLEM");
+    console.log("ORIGINAL:", bufString(buffer));
+    console.log("ENCODED: ", bufString(encode));
+    assert.ok(false);
+  }
+
+  if (decode.endIndex !== encode.length) {
+    throw new Error("Bad endIndex for " + value);
+  }
+}
+
 
 /*
  * Test cases
@@ -142,7 +348,7 @@ function testContiguousBits32() {
 }
 
 /**
- * Tests a (fixed but) pseudo-randomish series of values.
+ * Tests a (fixed but) pseudo-randomish series of 32-bit values.
  */
 function testMisc32() {
   var rand = new Randomish(123);
@@ -182,7 +388,7 @@ function testContiguousBits64() {
 }
 
 /**
- * Tests a (fixed but) pseudo-randomish series of values.
+ * Tests a (fixed but) pseudo-randomish series of 64-bit values.
  */
 function testMisc64() {
   var rand = new Randomish(65432);
@@ -192,12 +398,36 @@ function testMisc64() {
   }
 }
 
-      
+/**
+ * Tests a (fixed but) pseudo-randomish series of buffer values.
+ */
+function testBuffers() {
+  var rand = new Randomish(999);
+
+  for (var length = 1; length < 300; length++) {
+    var buffer = new Buffer(length);
+    for (var i = 0; i < 20; i++) {
+      rand.fillBuffer(buffer);
+      testEncodeDecode(buffer);
+      makeValidEncoding(buffer);
+      testDecodeEncode(buffer);
+    }
+  }
+
+  function makeValidEncoding(buffer) {
+    for (var i = buffer.length - 2; i >= 0; i--) {
+      buffer[i] |= 0x80;
+    }
+    buffer[buffer.length - 1] &= 0x7f;
+  }
+}
+
 testZero32();
 testContiguousBits32();
 testMisc32();
 testZero64();
 testContiguousBits64();
 testMisc64();
+testBuffers();
 
 console.log("All tests pass.");
