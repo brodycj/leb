@@ -157,6 +157,10 @@ function Randomish(seed) {
     return (z + (z >>> 8) + (z >>> 16) + (z >>> 24)) & 0xff;
   }
 
+  this.nextBit = function nextBit() {
+    return this.nextByte() & 1;
+  }
+
   this.nextUInt32 = function nextUInt32() {
     var result = 0;
     for (var i = 0; i < 4; i++) {
@@ -339,7 +343,7 @@ function testZero32() {
  */
 function testContiguousBits32() {
   for (var bitCount = 1; bitCount <= 32; bitCount++) {
-    var maxOffset = 32-bitCount;
+    var maxOffset = 32 - bitCount;
     var baseValue = (~0 >>> maxOffset);
     for (var offset = 0; offset < maxOffset; offset++) {
       testValue32(baseValue << offset);
@@ -373,7 +377,7 @@ function testContiguousBits64() {
   // Max bit count is 53, since floating point format can't represent
   // more than that.
   for (var bitCount = 1; bitCount <= 53; bitCount++) {
-    var maxOffset = 64-bitCount;
+    var maxOffset = 64 - bitCount;
     var baseValue = 1;
 
     for (var i = 1; i < bitCount; i++) {
@@ -384,6 +388,44 @@ function testContiguousBits64() {
       testValue64(baseValue);
       baseValue *= 2;
     }
+  }
+}
+
+/**
+ * Tests a (fixed but) pseudo-randomish series of encoded 64-bit values
+ * that are expected to be lossily decoded.
+ */
+function testLossy64() {
+  var rand = new Randomish(9140);
+  var buf = new Buffer(8);
+
+  for (var bitCount = 54; bitCount < 64; bitCount++) {
+    var maxOffset = 64 - bitCount;
+    for (var offset = 0; offset < maxOffset; offset++) {
+      for (var i = 0; i < 100; i++) {
+	trial(offset, bitCount);
+      }
+    }
+  }
+
+  function trial(offset, bitCount) {
+    buf.fill(0);
+
+    for (var i = 0; i < bitCount; i++) {
+      var bit = ((i == 0) || (i == (bitCount - 1))) ? 1 : rand.nextBit();
+      var at = offset + i;
+      if (bit) {
+	buf[Math.floor(at / 8)] |= (1 << (at % 8));
+      }
+    }
+
+    var encode = leb.encodeIntBuffer(buf);
+    var decode = leb.decodeInt64(encode);
+    assert.ok(decode.lossy);
+
+    encode = leb.encodeUIntBuffer(buf);
+    decode = leb.decodeUInt64(encode);
+    assert.ok(decode.lossy);
   }
 }
 
@@ -427,6 +469,7 @@ testContiguousBits32();
 testMisc32();
 testZero64();
 testContiguousBits64();
+testLossy64();
 testMisc64();
 testBuffers();
 
