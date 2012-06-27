@@ -20,7 +20,7 @@ unsigned values, and with the decoded form being any of 32-bit
 integers, 64-bit integers, and arbitrary-length buffer (taken to be a
 bigint-style representation in little-endian order).
 
-The 64-bit integer form requires a special note: Because JavaScript
+The 64-bit integer variants require a special note: Because JavaScript
 can't represent all possible 64-bit integers in its native number
 type, the 64-bit decoder methods return a `lossy` flag which indicates
 if the decoded result isn't exactly the number represented in the
