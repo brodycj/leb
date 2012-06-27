@@ -26,6 +26,7 @@ type, the 64-bit decoder methods return a `lossy` flag which indicates
 if the decoded result isn't exactly the number represented in the
 encoded form.
 
+
 Format Details
 --------------
 
@@ -96,6 +97,7 @@ c1 57        +2bc1             -143f
 80 80 80 3f  +7e00000          +7e00000
 80 80 80 4f  +9e00000          -6200000
 ```
+
 
 Building and Installing
 -----------------------
