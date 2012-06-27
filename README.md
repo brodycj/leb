@@ -46,7 +46,7 @@ API Details
 -----------
 
 ### encodeIntBuffer(buffer) -> encodedBuf
-### decodeIntBuffer(encodedBuffer) -> buffer
+### decodeIntBuffer(encodedBuffer, [index]) -> { value: buffer, endIndex: num }
 
 ### encodeInt32(num) -> buffer
 ### decodeInt32(buffer, [index]) -> { value: num, endIndex: num }
@@ -55,7 +55,7 @@ API Details
 ### decodeInt64(buffer, [index]) -> { value: num, endIndex: num, lossy: bool }
 
 ### encodeUintBuffer(buffer) -> encodedBuf
-### decodeUintBuffer(encodedBuffer) -> buffer
+### decodeUintBuffer(encodedBuffer, [index]) -> { value: buffer, endIndex: num }
 
 ### encodeUint32(num) -> buffer
 ### decodeUint32(buffer, [index]) -> { value: num, endIndex: num }

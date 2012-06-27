@@ -1,8 +1,9 @@
 {
     "name": "leb",
-    "version": "0.0.1",
+    "version": "0.2.0",
     "keywords":
-        ["leb", "leb128", "int", "encoding", "decoding", "encode", "decode"],
+        ["leb", "leb128", "uleb128", "int", "uint",
+        "encoding", "decoding", "encode", "decode"],
     "description":
         "LEB128 utilities for Node",
     "homepage": "https://github.com/Obvious/leb",
