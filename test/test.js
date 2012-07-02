@@ -333,7 +333,7 @@ function testDecodeEncode(buffer) {
 /**
  * Tests conversion of values that encode into one byte. This
  * includes exactly comparing the encoded values (whereas other tests
- * merely verify a encode-decode or decode-encode cycle).
+ * merely verify an encode-decode or decode-encode cycle).
  */
 function testOneByteEncodings() {
   var buf = new Buffer(1);
@@ -370,7 +370,7 @@ function testOneByteEncodings() {
 /**
  * Tests conversion of values that encode into two bytes. This
  * includes exactly comparing the encoded values (whereas other tests
- * merely verify a encode-decode or decode-encode cycle).
+ * merely verify an encode-decode or decode-encode cycle).
  */
 function testTwoByteEncodings() {
   var buf = new Buffer(2);
